@@ -1,5 +1,6 @@
 from tkinter import Frame, Tk,Canvas,Label ,Frame, Entry, Button,W,E,Listbox,END, Toplevel, messagebox
 from tkinter.constants import E, INSERT
+from tkinter.font import names
 import psycopg2
 
 root = Tk()
@@ -31,38 +32,101 @@ def autenticate(password,name):
 
     if row is not None:
         print(row)
-        
-        pantalla_principal()
+        pantalla_principal(name)
     else:
         error_mesage()
     conn.commit()
     conn.close()
-def pantalla_principal():
-    principal = Toplevel()
-    principal.geometry("500x500")
-    principal.title("Game init")
 
-def registrar(name,password,username,fecha,edad):
-    reg = Toplevel()
-    reg.geometry("300x300")
-    reg.title("registro completo")
+def pantalla_principal(userName):
+    principal = Toplevel()
+    principal.geometry("300x300")
+    principal.title("Game init")
     conn = psycopg2.connect(
         dbname = "taller3",
         user = "postgres",
         password = "root",
         host = "localhost",
         port = "5432"
-    )
+    ) 
     
-    cur = conn.cursor()
-    query ='''INSERT INTO entrenador (nombre, password ,nombre_usuario , fecha_nac , edad) VALUES (%s,%s,%s,%s,%s)'''
+    label = Label(principal,text='nombre: ')
+    label.grid(row=1,column=1)
+    label = Label(principal,text=userName)
+    label.grid(row=1,column=2)
 
-    cur.execute(query,(name , password , username , fecha , edad))
-    row = cur.fetchall() 
+    
+    cursor = conn.cursor()
+    query = '''SELECT * FROM entrenador WHERE nombre = %s '''
+    #print(user_name)
+    cursor.execute(query,(userName, ))
 
+
+    row = cursor.fetchone()
+
+    label = Label(principal,text = 'Nick name ')
+    label.grid(row=2,column=1)
+    label = Label(principal,text=row[3])
+    label.grid(row=2,column=2)
+
+    label = Label(principal,text = 'Date of birth ')
+    label.grid(row=3,column=1)
+    label = Label(principal,text=row[4])
+    label.grid(row=3,column=2)
+    
+    label = Label(principal,text = 'Age ')
+    label.grid(row=4,column=1)
+    label = Label(principal,text=row[5])
+    label.grid(row=4,column=2)
+    
+    Creatudex = Button(principal, text = "Creatudex", command=lambda : CreatudexMethod(row[0]))
+    Creatudex.grid(row=5,column=2,sticky=W+E)
+    Equipo_lucha = Button(principal, text = "Equipo Lucha", command=lambda : Equipo_lucha())
+    Equipo_lucha.grid(row=6,column=2,sticky=W+E)
+    Expedicion = Button(principal, text = "Expedicion", command=lambda : Expedicion())
+    Expedicion.grid(row=7,column=2,sticky=W+E)
+    Lucha = Button(principal, text = "Lucha", command=lambda : Expedicion())
+    Lucha.grid(row=7,column=2,sticky=W+E)
+    Cierre = Button(principal, text = "Cerrar")
+    Cierre.grid(row=9,column=2,sticky=W+E)
+    
+
+def CreatudexMethod(id):
+    id_user = str(id)
+    Creatudex = Toplevel()
+    Creatudex.geometry("300x300")
+    Creatudex.title("Creatudex")
+    conn = psycopg2.connect(
+        dbname="taller3",
+        user = "postgres",
+        password = "root",
+        host = "localhost",
+        port = "5432"
+    ) 
+    curr = conn.cursor()
+    query = '''SELECT * FROM equipo WHERE id_entrenador = %s '''
+
+    curr.execute(query,id_user)
+
+    row = curr.fetchone()
+
+    #id_m1 = row[1]
+    #id_m2 = row[2]
+    #id_m3 = row[3]
+    #id_m4 = row[4]
+    #id_m5 = row[5]
+    #id_m6 = row[6]
+
+    q1 = '''SELECT nombre especie.nombre FROM monstruos WHERE id_user = %s'''
+    curr.execute(q1,id)
+    row1 = curr.fetchall()
+    list = Listbox(Creatudex,width=80,height=70)
+    list.grid(row = 10,columnspan= 4,sticky=E+W)
+
+    for i in row1:
+        list.insert(END,i)
     conn.commit()
-    conn.close()    
-
+    conn.close()
 def registrar_user():
     registrar = Toplevel()
     registrar.geometry("600x200")
@@ -125,7 +189,8 @@ def registrar_query(name,password,username,fecha,edad):
     print("data saved !!")
     conn.commit()
     conn.close()
-    show();    
+    show(); 
+
 def show ():
     show = Toplevel()
     show.geometry("600x200")
